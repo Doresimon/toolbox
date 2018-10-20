@@ -1,4 +1,10 @@
 package euclidean
+/* 
+if r = gcd(a,b) = s*a + t*b == 1,
+we can get b^(-1) mod (a) = t
+
+which called "Multipilicative Inverse"
+*/ 
 
 func F_gcd_extend(a int, b int) (int,int,int){
 	_a := 0
