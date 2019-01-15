@@ -34,4 +34,4 @@ func BenchmarkPrime2048(b *testing.B) {
 	}
 }
 
-// go test -test.bench=".*" -benchmem -benchtime 10s -count 1
+// go test -test.bench=".*" -benchmem -benchtime 30s -count 1
