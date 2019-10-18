@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var nodeName = "mike"
+
 func main() {
 	ticker := time.NewTicker(60 * time.Second)
 	defer ticker.Stop()
@@ -27,12 +29,12 @@ func sendIP() error {
 		return err
 	}
 	fmt.Printf("send ip %s\n", selfIP)
-	host := "YOURIP"
+	host := "localhost" // replace localhost by your receiver's ip
 	port := "8088"
 	path := "put"
 	url := fmt.Sprintf("http://%s:%s/%s", host, port, path)
 
-	_, err = http.Post(url, "text/plain", strings.NewReader(selfIP))
+	_, err = http.Post(url, "text/plain", strings.NewReader(nodeName+"@"+selfIP))
 	return err
 }
 
