@@ -1,0 +1,11 @@
+from ubuntu:18.04
+
+WORKDIR /work
+ENV DEBIAN_FRONTEND=noninteractive
+RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+RUN sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+RUN apt update && \
+    apt install -y -q \
+    git curl wget
+
+CMD /bin/bash
