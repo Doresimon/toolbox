@@ -1,8 +1,6 @@
 const XLSX = require('xlsx');
 
-
-main()
-function main() {
+function SheetToJson() {
     const file = "./tmp/demo.xlsx"
     var workbook = XLSX.readFile(file);
     /* DO SOMETHING WITH workbook HERE */
@@ -22,3 +20,9 @@ function main() {
     console.log("first_sheet_name", first_sheet_name)
     console.log("desired_value", desired_value)
 }
+
+
+function Main() {
+    SheetToJson();
+}
+Main()
