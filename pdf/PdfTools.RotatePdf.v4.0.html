@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Rotator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .pdf-rotator {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .pdf-rotator.dragover {
+            background-color: #e0e0e0;
+        }
+
+        .pdf-viewer {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .pdf-file {
+            background-color: #e1f5fe;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .drag-drop {
+            border: 2px dashed #aaa;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .pdf-file {
+            background-color: #e1f5fe;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pdf-rotator">
+            <h2>PDF Rotater</h2>
+
+            <div class="drag-drop" id="dragDrop">
+                Drag and drop PDF file here or click to upload.
+            </div>
+            <div id="fileList"></div>
+
+            <button onclick="rotatePDF()">Rotate +90°</button>
+            <span id="rotateDegree">0°</span>
+        </div>
+        <div class="pdf-viewer">
+            <h3>Rotated PDF Viewer</h3>
+            <embed id="rotatedPdfViewer" type="application/pdf" width="100%" height="90%">
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script>
+        const { PDFDocument, degrees } = PDFLib;
+        let pdfFile = null;
+        let pdfDoc = null;
+        let rotatedPdf = null;
+
+        function handleDrop(event) {
+            event.preventDefault();
+            const files = event.dataTransfer.files;
+            handleFiles(files);
+
+            if (files.length !== 1) {
+                alert('Please select only 1 PDF file.');
+                return false;
+            }
+
+            const file = files[0]; // Assume only one file is selected
+            if (file.type !== 'application/pdf') {
+                alert('Please select a PDF file.');
+                return false;
+            }
+
+            pdfFile = file;
+
+            setRotateDegree(0);
+
+            loadPdfFile();
+        }
+
+        async function handleFiles(files) {
+            if (files.length !== 1) {
+                alert('Please select only 1 PDF file.');
+                return;
+            }
+
+            const file = files[0]; // Assume only one file is selected
+            if (file.type !== 'application/pdf') {
+                alert('Please select a PDF file.');
+                return;
+            }
+
+            pdfFile = file;
+            await loadPdfFile()
+            await ViewPdf();
+        }
+
+        document.getElementById('dragDrop').addEventListener('dragover', (event) => {
+            event.preventDefault();
+        });
+
+        document.getElementById('dragDrop').addEventListener('drop', handleDrop);
+
+        async function ViewPdf() {
+            if (pdfDoc == null) return;
+
+            const rotatedPdfBytes = await pdfDoc.save();
+            const rotatedPdf = new Blob([rotatedPdfBytes], { type: 'application/pdf' });
+            // Display rotated PDF in embed viewer
+            const url = URL.createObjectURL(rotatedPdf);
+            const embed = document.getElementById('rotatedPdfViewer');
+            embed.setAttribute('src', url);
+        }
+
+        async function loadPdfFile() {
+            if (pdfFile == null) return;
+
+            const fileList = document.getElementById('fileList');
+            const fileElem = document.createElement('div');
+            fileElem.className = 'pdf-file';
+            fileElem.textContent = pdfFile.name;
+            fileList.replaceChildren(fileElem);
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function (event) {
+                    try {
+                        const pdfBytes = new Uint8Array(event.target.result);
+                        pdfDoc = await PDFDocument.load(pdfBytes);
+
+                        resolve(true);
+                    } catch (error) {
+                        reject(error); // Reject if any error occurs
+                    }
+                };
+
+                reader.readAsArrayBuffer(pdfFile);
+            });
+        }
+
+        async function rotatePDF() {
+            if (pdfDoc == null) return;
+
+            // Rotate the first page by 90 degrees clockwise
+            const [firstPage] = pdfDoc.getPages();
+            addRotateDegree(90);
+            firstPage.setRotation(degrees(getRotateDegree()));
+
+            ViewPdf();
+        }
+
+        function getRotateDegree() {
+            return parseInt(document.getElementById('rotateDegree').textContent);
+        }
+
+        function setRotateDegree(degree) {
+            document.getElementById('rotateDegree').textContent = `${degree}°`;
+        }
+
+        function addRotateDegree(degree) {
+            let rotated = getRotateDegree();
+            rotated = (rotated + degree) % 360;
+            document.getElementById('rotateDegree').textContent = `${rotated}°`;
+        }
+    </script>
+</body>
+
+</html>
